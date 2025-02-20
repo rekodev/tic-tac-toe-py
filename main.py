@@ -1,7 +1,7 @@
 import random
 
 BOARD_SIDE_LENGTH = 3
-MAX_COMPUTER_MOVES_BEFORE_DRAW = 4
+MAX_PLAYER_MOVES_BEFORE_DRAW = round((BOARD_SIDE_LENGTH * BOARD_SIDE_LENGTH) / 2)
 
 player_turns = []
 computer_turns = []
@@ -23,7 +23,7 @@ def draw_board():
             if not move_printed:
                 print('* ', end = '')
         print('\n', end = '')
-    print('\n')
+    print('\n', end = '')
 
 def get_computer_turn():
     x = random.randint(0, 2)
@@ -33,6 +33,30 @@ def get_computer_turn():
         return get_computer_turn()
     else:
         return [x, y]
+
+def reset_game_turns():
+    global player_turns, computer_turns
+
+    player_turns = []
+    computer_turns = []
+
+def ask_to_play_again():
+    play_again = None
+
+    while play_again is None:
+        player_decision = input('Would you like to play again? [Y/n]: ')
+
+        if player_decision == '' or player_decision.capitalize() == 'Y':
+            play_again = True 
+            print('\n', end='')
+        elif player_decision.capitalize() == 'N':
+            play_again = False
+        else:
+            print('\nInput must be either \'y\' or \'n\'\n')
+
+    reset_game_turns()
+
+    return play_again  
 
 def determine_if_winner(turns):
     # Horizontally
@@ -75,7 +99,21 @@ while True:
     if (determine_if_winner(player_turns)):
         print('Congratulations, you have won!\n')
         draw_board()
-        break
+        player_wants_to_play_again = ask_to_play_again()
+        if player_wants_to_play_again:
+            continue
+        else:
+            break
+
+    # If the player hasn't won after his 5th turn, then it's a draw
+    if len(player_turns) == MAX_PLAYER_MOVES_BEFORE_DRAW:
+        print('It\'s a draw.\n')
+        draw_board()
+        player_wants_to_play_again = ask_to_play_again()
+        if player_wants_to_play_again:
+            continue
+        else:
+            break
 
     computer_turn = get_computer_turn()
     computer_turns.append(computer_turn)
@@ -84,14 +122,11 @@ while True:
     if (is_computer_winner):
         print('Oh no, you have lost against the computer...\n')
         draw_board()
-        break
-
-    # If neither the player nor the computer have won 
-    # After the 4th player and computer turn, then it's a draw
-    if len(computer_turns) == MAX_COMPUTER_MOVES_BEFORE_DRAW:
-        print('It\'s a draw.\n')
-        draw_board()
-        break
+        player_wants_to_play_again = ask_to_play_again()
+        if player_wants_to_play_again:
+            continue
+        else:
+            break
 
     print(f"Your move: X: {player_x}, Y: {player_y}")
     print(f"The computer\'s move: X: {computer_turn[0]}, Y: {computer_turn[1]}\n")
